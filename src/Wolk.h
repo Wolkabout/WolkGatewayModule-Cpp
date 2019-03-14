@@ -25,8 +25,8 @@
 #include "WolkBuilder.h"
 #include "model/ActuatorStatus.h"
 #include "model/Device.h"
-#include "model/DeviceRegistrationResponse.h"
 #include "model/DeviceStatus.h"
+#include "model/SubdeviceRegistrationResponse.h"
 #include "protocol/DataProtocol.h"
 #include "protocol/RegistrationProtocol.h"
 #include "protocol/StatusProtocol.h"
@@ -233,14 +233,12 @@ private:
     std::vector<std::string> getDeviceKeys();
     bool deviceExists(const std::string& deviceKey);
     bool sensorDefinedForDevice(const std::string& deviceKey, const std::string& reference);
-    std::string getSensorDelimiter(const std::string& deviceKey, const std::string& reference);
-    std::map<std::string, std::string> getConfigurationDelimiters(const std::string& deviceKey);
     std::vector<std::string> getActuatorReferences(const std::string& deviceKey);
     bool alarmDefinedForDevice(const std::string& deviceKey, const std::string& reference);
     bool actuatorDefinedForDevice(const std::string& deviceKey, const std::string& reference);
     bool configurationItemDefinedForDevice(const std::string& deviceKey, const std::string& reference);
 
-    void handleRegistrationResponse(const std::string& deviceKey, DeviceRegistrationResponse::Result result);
+    void handleRegistrationResponse(const std::string& deviceKey, SubdeviceRegistrationResponse::Result result);
 
     std::unique_ptr<ConnectivityService> m_connectivityService;
 

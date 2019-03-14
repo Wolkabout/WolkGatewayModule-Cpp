@@ -228,7 +228,7 @@ std::unique_ptr<Wolk> WolkBuilder::build()
 
     wolk->m_deviceRegistrationService = std::make_shared<DeviceRegistrationService>(
       *wolk->m_registrationProtocol, *wolk->m_connectivityService,
-      [&](const std::string& key, DeviceRegistrationResponse::Result result) {
+      [&](const std::string& key, SubdeviceRegistrationResponse::Result result) {
           wolk->handleRegistrationResponse(key, result);
       });
 

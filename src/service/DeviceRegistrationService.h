@@ -18,7 +18,7 @@
 #define DEVICEREGISTRATIONSERVICE_H
 
 #include "InboundMessageHandler.h"
-#include "model/DeviceRegistrationResponse.h"
+#include "model/SubdeviceRegistrationResponse.h"
 
 #include <functional>
 
@@ -28,7 +28,7 @@ class ConnectivityService;
 class RegistrationProtocol;
 class DetailedDevice;
 
-typedef std::function<void(const std::string&, DeviceRegistrationResponse::Result)> RegistrationResponseHandler;
+typedef std::function<void(const std::string&, SubdeviceRegistrationResponse::Result)> RegistrationResponseHandler;
 
 class DeviceRegistrationService : public MessageListener
 {

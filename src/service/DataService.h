@@ -54,16 +54,14 @@ public:
                           unsigned long long int rtc);
 
     void addSensorReading(const std::string& deviceKey, const std::string& reference,
-                          const std::vector<std::string>& values, const std::string& delimiter,
-                          unsigned long long int rtc);
+                          const std::vector<std::string>& values, unsigned long long int rtc);
 
     void addAlarm(const std::string& deviceKey, const std::string& reference, bool active, unsigned long long int rtc);
 
     void addActuatorStatus(const std::string& deviceKey, const std::string& reference, const std::string& value,
                            ActuatorStatus::State state);
 
-    void addConfiguration(const std::string& deviceKey, const std::vector<ConfigurationItem>& configuration,
-                          const std::map<std::string, std::string>& delimiters);
+    void addConfiguration(const std::string& deviceKey, const std::vector<ConfigurationItem>& configuration);
 
     void publishSensorReadings();
     void publishSensorReadings(const std::string& deviceKey);
@@ -80,8 +78,6 @@ public:
 private:
     std::string makePersistenceKey(const std::string& deviceKey, const std::string& reference) const;
     std::pair<std::string, std::string> parsePersistenceKey(const std::string& key) const;
-    std::string getSensorDelimiter(const std::string& key) const;
-    std::map<std::string, std::string> getConfigurationDelimiters(const std::string& key) const;
     std::vector<std::string> findMatchingPersistanceKeys(const std::string& deviceKey,
                                                          const std::vector<std::string>& persistanceKeys) const;
 
@@ -99,9 +95,6 @@ private:
 
     ConfigurationSetHandler m_configurationSetHandler;
     ConfigurationGetHandler m_configurationGetHandler;
-
-    std::map<std::string, std::string> m_sensorDelimiters;
-    std::map<std::string, std::map<std::string, std::string>> m_configurationDelimiters;
 
     static const std::string PERSISTENCE_KEY_DELIMITER;
     static const constexpr unsigned int PUBLISH_BATCH_ITEMS_COUNT = 50;

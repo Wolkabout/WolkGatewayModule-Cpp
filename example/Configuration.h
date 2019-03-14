@@ -15,7 +15,7 @@
  */
 
 #include "model/Device.h"
-#include "model/DeviceManifest.h"
+#include "model/DeviceTemplate.h"
 #include <string>
 #include <vector>
 
@@ -30,7 +30,6 @@ enum class ValueGenerator
 class DeviceConfiguration
 {
 public:
-    DeviceConfiguration() = default;
     DeviceConfiguration(std::string localMqttUri, unsigned interval, std::vector<wolkabout::Device> devices,
                         ValueGenerator generator);
 

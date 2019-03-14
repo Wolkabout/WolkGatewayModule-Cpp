@@ -16,8 +16,8 @@
 
 #include "service/DeviceRegistrationService.h"
 #include "connectivity/ConnectivityService.h"
-#include "model/DeviceRegistrationRequest.h"
 #include "model/Message.h"
+#include "model/SubdeviceRegistrationRequest.h"
 #include "protocol/RegistrationProtocol.h"
 #include "utilities/Logger.h"
 
@@ -41,9 +41,9 @@ void DeviceRegistrationService::messageReceived(std::shared_ptr<Message> message
         return;
     }
 
-    if (m_protocol.isRegistrationResponseMessage(*message))
+    if (m_protocol.isSubdeviceRegistrationResponseMessage(*message))
     {
-        const auto response = m_protocol.makeRegistrationResponse(*message);
+        const auto response = m_protocol.makeSubdeviceRegistrationResponse(*message);
         if (!response)
         {
             LOG(ERROR)
@@ -66,9 +66,9 @@ const Protocol& DeviceRegistrationService::getProtocol()
 
 void DeviceRegistrationService::publishRegistrationRequest(const DetailedDevice& device)
 {
-    DeviceRegistrationRequest request{device};
+    SubdeviceRegistrationRequest request{device};
 
-    const std::shared_ptr<Message> outboundMessage = m_protocol.makeMessage(device.getKey(), request);
+    const std::shared_ptr<Message> outboundMessage = m_protocol.makeMessage(request);
 
     if (!outboundMessage || !m_connectivityService.publish(outboundMessage))
     {

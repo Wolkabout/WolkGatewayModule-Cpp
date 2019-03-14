@@ -16,10 +16,10 @@
 
 #include "Configuration.h"
 #include "Wolk.h"
-#include "model/DeviceManifest.h"
+#include "model/DeviceTemplate.h"
 #include "utilities/ConsoleLogger.h"
 
-#include "model/SensorManifest.h"
+#include "model/SensorTemplate.h"
 
 #include <algorithm>
 #include <chrono>
@@ -92,41 +92,36 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    wolkabout::DeviceConfiguration appConfiguration;
-    try
-    {
-        appConfiguration = wolkabout::DeviceConfiguration::fromJson(argv[1]);
-    }
-    catch (std::logic_error& e)
-    {
-        LOG(ERROR) << "WolkGatewayModule Application: Unable to parse configuration file. Reason: " << e.what();
-        return -1;
-    }
+    wolkabout::DeviceConfiguration appConfiguration = [&] {
+        try
+        {
+            return wolkabout::DeviceConfiguration::fromJson(argv[1]);
+        }
+        catch (std::logic_error& e)
+        {
+            LOG(ERROR) << "WolkGatewayModule Application: Unable to parse configuration file. Reason: " << e.what();
+            std::exit(-1);
+        }
+    }();
 
     std::map<std::string, std::shared_ptr<ActuatorHandler>> handlers;
 
     for (const auto& device : appConfiguration.getDevices())
     {
-        for (const auto& actuator : device.getManifest().getActuators())
+        for (const auto& actuator : device.getTemplate().getActuators())
         {
             std::shared_ptr<ActuatorHandler> handler;
-            switch (actuator.getDataType())
-            {
-            case wolkabout::DataType::BOOLEAN:
+            if (actuator.getReadingTypeName() == "SWITCH(ACTUATOR)")
             {
                 handler.reset(new ActuatorTemplateHandler<bool>());
-                break;
             }
-            case wolkabout::DataType::NUMERIC:
+            else if (actuator.getReadingTypeName() == "COUNT(ACTUATOR)")
             {
                 handler.reset(new ActuatorTemplateHandler<double>());
-                break;
             }
-            case wolkabout::DataType::STRING:
+            else
             {
                 handler.reset(new ActuatorTemplateHandler<std::string>());
-                break;
-            }
             }
 
             handlers[device.getKey() + "_" + actuator.getReference()] = handler;
@@ -139,7 +134,7 @@ int main(int argc, char** argv)
 
     for (const auto& device : appConfiguration.getDevices())
     {
-        for (const auto& conf : device.getManifest().getConfigurations())
+        for (const auto& conf : device.getTemplate().getConfigurations())
         {
             localConfiguration[device.getKey()].push_back(wolkabout::ConfigurationItem{
               std::vector<std::string>(conf.getSize(), conf.getDefaultValue()), conf.getReference()});
@@ -263,14 +258,14 @@ int main(int argc, char** argv)
     {
         for (const auto& device : appConfiguration.getDevices())
         {
-            for (const auto& sensor : device.getManifest().getSensors())
+            for (const auto& sensor : device.getTemplate().getSensors())
             {
                 std::vector<int> values;
 
                 if (appConfiguration.getValueGenerator() == wolkabout::ValueGenerator::INCEREMENTAL)
                 {
                     static int value = 0;
-                    for (size_t i = 0; i < sensor.getSize(); ++i)
+                    //                    for (size_t i = 0; i < sensor.getSize(); ++i)
                     {
                         values.push_back(++value);
                     }
@@ -279,7 +274,7 @@ int main(int argc, char** argv)
                 {
                     std::uniform_int_distribution<int> dist(sensor.getMinimum(), sensor.getMaximum());
 
-                    for (size_t i = 0; i < sensor.getSize(); ++i)
+                    //                    for (size_t i = 0; i < sensor.getSize(); ++i)
                     {
                         int rand_num = dist(mt);
                         values.push_back(rand_num);

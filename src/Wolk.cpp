@@ -99,8 +99,7 @@ void Wolk::addSensorReading(const std::string& deviceKey, const std::string& ref
             return;
         }
 
-        m_dataService->addSensorReading(deviceKey, reference, values, getSensorDelimiter(deviceKey, reference),
-                                        rtc != 0 ? rtc : Wolk::currentRtc());
+        m_dataService->addSensorReading(deviceKey, reference, values, rtc != 0 ? rtc : Wolk::currentRtc());
     });
 }
 
@@ -435,7 +434,7 @@ void Wolk::handleConfigurationSetCommand(const std::string& key, const std::vect
             return std::vector<ConfigurationItem>{};
         }();
 
-        m_dataService->addConfiguration(key, configFromDevice, getConfigurationDelimiters(key));
+        m_dataService->addConfiguration(key, configFromDevice);
         m_dataService->publishConfiguration();
     });
 }
@@ -461,7 +460,7 @@ void Wolk::handleConfigurationGetCommand(const std::string& key)
             return std::vector<ConfigurationItem>{};
         }();
 
-        m_dataService->addConfiguration(key, configFromDevice, getConfigurationDelimiters(key));
+        m_dataService->addConfiguration(key, configFromDevice);
         m_dataService->publishConfiguration();
     });
 }
@@ -543,53 +542,11 @@ bool Wolk::sensorDefinedForDevice(const std::string& deviceKey, const std::strin
         return false;
     }
 
-    const auto sensors = it->second.getManifest().getSensors();
+    const auto sensors = it->second.getTemplate().getSensors();
     auto sensorIt = std::find_if(sensors.cbegin(), sensors.cend(),
-                                 [&](const SensorManifest& manifest) { return manifest.getReference() == reference; });
+                                 [&](const SensorTemplate& Template) { return Template.getReference() == reference; });
 
     return sensorIt != sensors.end();
-}
-
-std::string Wolk::getSensorDelimiter(const std::string& deviceKey, const std::string& reference)
-{
-    auto it = m_devices.find(deviceKey);
-    if (it == m_devices.end())
-    {
-        return "";
-    }
-
-    const auto sensors = it->second.getManifest().getSensors();
-    auto sensorIt = std::find_if(sensors.cbegin(), sensors.cend(),
-                                 [&](const SensorManifest& manifest) { return manifest.getReference() == reference; });
-
-    if (sensorIt == sensors.end())
-    {
-        return "";
-    }
-
-    return sensorIt->getDelimiter();
-}
-
-std::map<std::string, std::string> Wolk::getConfigurationDelimiters(const std::string& deviceKey)
-{
-    std::map<std::string, std::string> delimiters;
-
-    auto it = m_devices.find(deviceKey);
-    if (it == m_devices.end())
-    {
-        return delimiters;
-    }
-
-    const auto configurationItems = it->second.getManifest().getConfigurations();
-    for (const auto& item : configurationItems)
-    {
-        if (!item.getDelimiter().empty())
-        {
-            delimiters[item.getReference()] = item.getDelimiter();
-        }
-    }
-
-    return delimiters;
 }
 
 std::vector<std::string> Wolk::getActuatorReferences(const std::string& deviceKey)
@@ -611,9 +568,9 @@ bool Wolk::alarmDefinedForDevice(const std::string& deviceKey, const std::string
         return false;
     }
 
-    const auto alarms = it->second.getManifest().getAlarms();
+    const auto alarms = it->second.getTemplate().getAlarms();
     auto alarmIt = std::find_if(alarms.cbegin(), alarms.cend(),
-                                [&](const AlarmManifest& manifest) { return manifest.getReference() == reference; });
+                                [&](const AlarmTemplate& Template) { return Template.getReference() == reference; });
 
     return alarmIt != alarms.end();
 }
@@ -640,15 +597,15 @@ bool Wolk::configurationItemDefinedForDevice(const std::string& deviceKey, const
         return false;
     }
 
-    const auto configurations = it->second.getManifest().getConfigurations();
+    const auto configurations = it->second.getTemplate().getConfigurations();
     auto configurationIt =
       std::find_if(configurations.cbegin(), configurations.cend(),
-                   [&](const ConfigurationManifest& manifest) { return manifest.getReference() == reference; });
+                   [&](const ConfigurationTemplate& Template) { return Template.getReference() == reference; });
 
     return configurationIt != configurations.end();
 }
 
-void Wolk::handleRegistrationResponse(const std::string& deviceKey, DeviceRegistrationResponse::Result result)
+void Wolk::handleRegistrationResponse(const std::string& deviceKey, SubdeviceRegistrationResponse::Result result)
 {
     LOG(INFO) << "Registration response for device '" << deviceKey << "' received: " << static_cast<int>(result);
 
@@ -659,7 +616,7 @@ void Wolk::handleRegistrationResponse(const std::string& deviceKey, DeviceRegist
             return;
         }
 
-        if (result == DeviceRegistrationResponse::Result::OK)
+        if (result == SubdeviceRegistrationResponse::Result::OK)
         {
             for (const auto& ref : getActuatorReferences(deviceKey))
             {

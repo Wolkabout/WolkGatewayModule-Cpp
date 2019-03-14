@@ -89,7 +89,7 @@ wolkabout::DeviceConfiguration DeviceConfiguration::fromJson(const std::string& 
     std::vector<Device> devices;
     for (auto& element : j.at("devices"))
     {
-        const auto manifest = element.at("manifest").get<wolkabout::DeviceManifest>();
+        const auto manifest = element.at("template").get<wolkabout::DeviceTemplate>();
         const auto name = element.at("name").get<std::string>();
         const auto key = element.at("key").get<std::string>();
 

@@ -126,14 +126,11 @@ void DataService::addSensorReading(const std::string& deviceKey, const std::stri
 }
 
 void DataService::addSensorReading(const std::string& deviceKey, const std::string& reference,
-                                   const std::vector<std::string>& values, const std::string& delimiter,
-                                   unsigned long long int rtc)
+                                   const std::vector<std::string>& values, unsigned long long int rtc)
 {
     auto sensorReading = std::make_shared<SensorReading>(values, reference, rtc);
 
     auto key = makePersistenceKey(deviceKey, reference);
-
-    m_sensorDelimiters[key] = delimiter;
 
     m_persistence.putSensorReading(key, sensorReading);
 }
@@ -154,12 +151,9 @@ void DataService::addActuatorStatus(const std::string& deviceKey, const std::str
     m_persistence.putActuatorStatus(makePersistenceKey(deviceKey, reference), actuatorStatusWithRef);
 }
 
-void DataService::addConfiguration(const std::string& deviceKey, const std::vector<ConfigurationItem>& configuration,
-                                   const std::map<std::string, std::string>& delimiters)
+void DataService::addConfiguration(const std::string& deviceKey, const std::vector<ConfigurationItem>& configuration)
 {
     auto conf = std::make_shared<std::vector<ConfigurationItem>>(configuration);
-
-    m_configurationDelimiters[deviceKey] = delimiters;
 
     m_persistence.putConfiguration(deviceKey, conf);
 }
@@ -201,9 +195,7 @@ void DataService::publishSensorReadingsForPersistanceKey(const std::string& pers
         return;
     }
 
-    const auto delimiter = getSensorDelimiter(persistanceKey);
-
-    const std::shared_ptr<Message> outboundMessage = m_protocol.makeMessage(pair.first, sensorReadings, delimiter);
+    const std::shared_ptr<Message> outboundMessage = m_protocol.makeMessage(pair.first, sensorReadings);
 
     if (!outboundMessage)
     {
@@ -350,9 +342,7 @@ void DataService::publishConfigurationForPersistanceKey(const std::string& persi
         return;
     }
 
-    const auto delimiters = getConfigurationDelimiters(persistanceKey);
-
-    const std::shared_ptr<Message> outboundMessage = m_protocol.makeMessage(persistanceKey, *configuration, delimiters);
+    const std::shared_ptr<Message> outboundMessage = m_protocol.makeMessage(persistanceKey, *configuration);
 
     if (!outboundMessage)
     {
@@ -384,20 +374,6 @@ std::pair<std::string, std::string> DataService::parsePersistenceKey(const std::
     auto reference = key.substr(pos + PERSISTENCE_KEY_DELIMITER.size(), std::string::npos);
 
     return std::make_pair(deviceKey, reference);
-}
-
-std::string DataService::getSensorDelimiter(const std::string& key) const
-{
-    const auto it = m_sensorDelimiters.find(key);
-
-    return it != m_sensorDelimiters.end() ? it->second : "";
-}
-
-std::map<std::string, std::string> DataService::getConfigurationDelimiters(const std::string& key) const
-{
-    const auto it = m_configurationDelimiters.find(key);
-
-    return it != m_configurationDelimiters.end() ? it->second : std::map<std::string, std::string>{};
 }
 
 std::vector<std::string> DataService::findMatchingPersistanceKeys(const std::string& deviceKey,
