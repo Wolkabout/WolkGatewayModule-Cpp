@@ -265,7 +265,20 @@ int main(int argc, char** argv)
                 if (appConfiguration.getValueGenerator() == wolkabout::ValueGenerator::INCEREMENTAL)
                 {
                     static int value = 0;
-                    //                    for (size_t i = 0; i < sensor.getSize(); ++i)
+                    int size = 1;
+                    if (!sensor.getDescription().empty())
+                    {
+                        // get sensor size from description as the size param is removed
+                        try
+                        {
+                            size = std::stoi(sensor.getDescription());
+                        }
+                        catch (...)
+                        {
+                        }
+                    }
+
+                    for (int i = 0; i < size; ++i)
                     {
                         values.push_back(++value);
                     }
@@ -274,7 +287,20 @@ int main(int argc, char** argv)
                 {
                     std::uniform_int_distribution<int> dist(sensor.getMinimum(), sensor.getMaximum());
 
-                    //                    for (size_t i = 0; i < sensor.getSize(); ++i)
+                    int size = 1;
+                    if (!sensor.getDescription().empty())
+                    {
+                        // get sensor size from description as the size param is removed
+                        try
+                        {
+                            size = std::stoi(sensor.getDescription());
+                        }
+                        catch (...)
+                        {
+                        }
+                    }
+
+                    for (int i = 0; i < size; ++i)
                     {
                         int rand_num = dist(mt);
                         values.push_back(rand_num);
