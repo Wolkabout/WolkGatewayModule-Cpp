@@ -41,7 +41,7 @@ void DeviceRegistrationService::messageReceived(std::shared_ptr<Message> message
         return;
     }
 
-    if (m_protocol.isSubdeviceRegistrationResponseMessage(*message))
+    if (m_protocol.isSubdeviceRegistrationResponse(*message))
     {
         const auto response = m_protocol.makeSubdeviceRegistrationResponse(*message);
         if (!response)
@@ -68,7 +68,7 @@ void DeviceRegistrationService::publishRegistrationRequest(const DetailedDevice&
 {
     SubdeviceRegistrationRequest request{device};
 
-    const std::shared_ptr<Message> outboundMessage = m_protocol.makeMessage(request);
+    const std::shared_ptr<Message> outboundMessage = m_protocol.makeMessage(device.getKey(), request);
 
     if (!outboundMessage || !m_connectivityService.publish(outboundMessage))
     {

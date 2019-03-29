@@ -39,7 +39,9 @@ public:
     void messageReceived(std::shared_ptr<Message> message) override;
     const Protocol& getProtocol() override;
 
-    void publishDeviceStatus(const std::string& deviceKey, DeviceStatus status);
+    void publishDeviceStatusUpdate(const std::string& deviceKey, DeviceStatus::Status status);
+
+    void publishDeviceStatusResponse(const std::string& deviceKey, DeviceStatus::Status status);
 
     void devicesUpdated(const std::vector<std::string>& deviceKeys);
 

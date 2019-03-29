@@ -24,17 +24,19 @@
 
 namespace wolkabout
 {
+class ConnectivityService;
 class FirmwareInstaller;
 class FirmwareVersionProvider;
-class FirmwareUpdateCommand;
+class FirmwareUpdateAbort;
+class FirmwareUpdateInstall;
 class FirmwareUpdateResponse;
-class FirmwareUpdateProtocol;
-class ConnectivityService;
+class FirmwareUpdateStatus;
+class JsonDFUProtocol;
 
 class FirmwareUpdateService : public MessageListener
 {
 public:
-    FirmwareUpdateService(FirmwareUpdateProtocol& protocol, std::shared_ptr<FirmwareInstaller> firmwareInstaller,
+    FirmwareUpdateService(JsonDFUProtocol& protocol, std::shared_ptr<FirmwareInstaller> firmwareInstaller,
                           std::shared_ptr<FirmwareVersionProvider> firmwareVersionProvider,
                           ConnectivityService& connectivityService);
 
@@ -44,26 +46,8 @@ public:
     void publishFirmwareVersion(const std::string& deviceKey);
 
 private:
-    class LocalFileDownloader
-    {
-    public:
-        enum class ErrorCode
-        {
-            FILE_DOES_NOT_EXIST,
-            UNSPECIFIED_ERROR
-        };
-
-        void download(const std::string& filePath, std::function<void(const std::string& path)> onSuccess,
-                      std::function<void(ErrorCode)> onFail);
-    } m_fileDownloader;
-
-    void handleFirmwareUpdateCommand(const FirmwareUpdateCommand& command, const std::string deviceKey);
-
-    void urlDownload(const std::string& deviceKey, const std::string& url, bool autoInstall);
-
-    void downloadCompleted(const std::string& filePath, const std::string& deviceKey, bool autoInstall);
-
-    void downloadFailed(LocalFileDownloader::ErrorCode errorCode, const std::string& deviceKey);
+    void handleFirmwareUpdateCommand(const FirmwareUpdateInstall& command);
+    void handleFirmwareUpdateCommand(const FirmwareUpdateAbort& command);
 
     void install(const std::string& deviceKey, const std::string& firmwareFilePath);
 
@@ -73,22 +57,16 @@ private:
 
     void abort(const std::string& deviceKey);
 
-    void sendResponse(const FirmwareUpdateResponse& response, const std::string& deviceKey);
+    void sendStatus(const FirmwareUpdateStatus& status);
 
     void addToCommandBuffer(std::function<void()> command);
 
-    void addFirmwareFile(const std::string& deviceKey, const std::string& firmwareFilePath);
-    void removeFirmwareFile(const std::string& deviceKey);
-    std::string getFirmwareFile(const std::string& deviceKey);
-
-    FirmwareUpdateProtocol& m_protocol;
+    JsonDFUProtocol& m_protocol;
 
     std::shared_ptr<FirmwareInstaller> m_firmwareInstaller;
     std::shared_ptr<FirmwareVersionProvider> m_firmwareVersionProvider;
 
     ConnectivityService& m_connectivityService;
-
-    std::map<std::string, std::string> m_firmwareFiles;
 
     CommandBuffer m_commandBuffer;
 };

@@ -17,10 +17,15 @@
 #include "Wolk.h"
 #include "ActuationHandlerPerDevice.h"
 #include "ActuatorStatusProviderPerDevice.h"
+#include "InboundGatewayMessageHandler.h"
 #include "WolkBuilder.h"
 #include "connectivity/ConnectivityService.h"
 #include "model/ActuatorStatus.h"
 #include "model/Device.h"
+#include "protocol/DataProtocol.h"
+#include "protocol/RegistrationProtocol.h"
+#include "protocol/StatusProtocol.h"
+#include "protocol/json/JsonDFUProtocol.h"
 #include "service/DataService.h"
 #include "service/DeviceRegistrationService.h"
 #include "service/DeviceStatusService.h"
@@ -168,7 +173,7 @@ void Wolk::publishConfiguration(const std::string& deviceKey)
     handleConfigurationGetCommand(deviceKey);
 }
 
-void Wolk::addDeviceStatus(const std::string& deviceKey, DeviceStatus status)
+void Wolk::addDeviceStatus(const std::string& deviceKey, DeviceStatus::Status status)
 {
     addToCommandBuffer([=] {
         if (!deviceExists(deviceKey))
@@ -177,7 +182,7 @@ void Wolk::addDeviceStatus(const std::string& deviceKey, DeviceStatus status)
             return;
         }
 
-        m_deviceStatusService->publishDeviceStatus(deviceKey, status);
+        m_deviceStatusService->publishDeviceStatusUpdate(deviceKey, status);
     });
 }
 
@@ -377,7 +382,7 @@ void Wolk::handleDeviceStatusRequest(const std::string& key)
             return;
         }
 
-        const DeviceStatus status = [&] {
+        const DeviceStatus::Status status = [&] {
             if (m_deviceStatusProvider)
             {
                 return m_deviceStatusProvider->getDeviceStatus(key);
@@ -387,10 +392,10 @@ void Wolk::handleDeviceStatusRequest(const std::string& key)
                 return m_deviceStatusProviderLambda(key);
             }
 
-            return DeviceStatus::OFFLINE;
+            return DeviceStatus::Status::OFFLINE;
         }();
 
-        m_deviceStatusService->publishDeviceStatus(key, status);
+        m_deviceStatusService->publishDeviceStatusResponse(key, status);
     });
 }
 
@@ -512,7 +517,22 @@ void Wolk::publishDeviceStatuses()
     addToCommandBuffer([=] {
         for (const auto& kvp : m_devices)
         {
-            handleDeviceStatusRequest(kvp.second.getKey());
+            addToCommandBuffer([=] {
+                const DeviceStatus::Status status = [&] {
+                    if (m_deviceStatusProvider)
+                    {
+                        return m_deviceStatusProvider->getDeviceStatus(kvp.second.getKey());
+                    }
+                    else if (m_deviceStatusProviderLambda)
+                    {
+                        return m_deviceStatusProviderLambda(kvp.second.getKey());
+                    }
+
+                    return DeviceStatus::Status::OFFLINE;
+                }();
+
+                m_deviceStatusService->publishDeviceStatusUpdate(kvp.second.getKey(), status);
+            });
         }
     });
 }

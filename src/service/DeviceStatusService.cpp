@@ -16,7 +16,7 @@
 
 #include "service/DeviceStatusService.h"
 #include "connectivity/ConnectivityService.h"
-#include "model/DeviceStatusResponse.h"
+#include "model/DeviceStatus.h"
 #include "model/Message.h"
 #include "protocol/StatusProtocol.h"
 
@@ -54,9 +54,21 @@ const Protocol& DeviceStatusService::getProtocol()
     return m_protocol;
 }
 
-void DeviceStatusService::publishDeviceStatus(const std::string& deviceKey, DeviceStatus status)
+void DeviceStatusService::publishDeviceStatusResponse(const std::string& deviceKey, DeviceStatus::Status status)
 {
-    std::shared_ptr<Message> outboundMessage = m_protocol.makeMessage(deviceKey, status);
+    std::shared_ptr<Message> outboundMessage =
+      m_protocol.makeStatusResponseMessage(deviceKey, DeviceStatus{deviceKey, status});
+
+    if (!outboundMessage || !m_connectivityService.publish(outboundMessage))
+    {
+        LOG(INFO) << "Status not published for device: " << deviceKey;
+    }
+}
+
+void DeviceStatusService::publishDeviceStatusUpdate(const std::string& deviceKey, DeviceStatus::Status status)
+{
+    std::shared_ptr<Message> outboundMessage =
+      m_protocol.makeStatusUpdateMessage(deviceKey, DeviceStatus{deviceKey, status});
 
     if (!outboundMessage || !m_connectivityService.publish(outboundMessage))
     {

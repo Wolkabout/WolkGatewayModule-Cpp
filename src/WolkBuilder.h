@@ -70,8 +70,9 @@ public:
      * @return Reference to current wolkabout::WolkBuilder instance (Provides
      * fluent interface)
      */
-    WolkBuilder& actuationHandler(const std::function<void(const std::string& deviceKey, const std::string& reference,
-                                                           const std::string& value)>& actuationHandler);
+    WolkBuilder& actuationHandler(
+      std::function<void(const std::string& deviceKey, const std::string& reference, const std::string& value)>
+        actuationHandler);
 
     /**
      * @brief Sets actuation handler
@@ -89,8 +90,7 @@ public:
      * fluent interface)
      */
     WolkBuilder& actuatorStatusProvider(
-      const std::function<ActuatorStatus(const std::string& deviceKey, const std::string& reference)>&
-        actuatorStatusProvider);
+      std::function<ActuatorStatus(const std::string& deviceKey, const std::string& reference)> actuatorStatusProvider);
 
     /**
      * @brief Sets actuation status provider
@@ -107,7 +107,7 @@ public:
      * @return Reference to current wolkabout::WolkBuilder instance (Provides fluent interface)
      */
     WolkBuilder& configurationHandler(
-      const std::function<void(const std::string& deviceKey, const std::vector<ConfigurationItem>& configuration)>&
+      std::function<void(const std::string& deviceKey, const std::vector<ConfigurationItem>& configuration)>
         configurationHandler);
 
     /**
@@ -123,7 +123,7 @@ public:
      * @return Reference to current wolkabout::WolkBuilder instance (Provides fluent interface)
      */
     WolkBuilder& configurationProvider(
-      const std::function<std::vector<ConfigurationItem>(const std::string& deviceKey)>& configurationProvider);
+      std::function<std::vector<ConfigurationItem>(const std::string& deviceKey)> configurationProvider);
 
     /**
      * @brief Sets device configuration provider
@@ -140,7 +140,7 @@ public:
      * fluent interface)
      */
     WolkBuilder& deviceStatusProvider(
-      const std::function<DeviceStatus(const std::string& deviceKey)>& deviceStatusProvider);
+      std::function<DeviceStatus::Status(const std::string& deviceKey)> deviceStatusProvider);
 
     /**
      * @brief Sets device status provider
@@ -212,15 +212,10 @@ private:
     std::function<std::vector<ConfigurationItem>(const std::string&)> m_configurationProviderLambda;
     std::shared_ptr<ConfigurationProviderPerDevice> m_configurationProvider;
 
-    std::function<DeviceStatus(const std::string&)> m_deviceStatusProviderLambda;
+    std::function<DeviceStatus::Status(const std::string&)> m_deviceStatusProviderLambda;
     std::shared_ptr<DeviceStatusProvider> m_deviceStatusProvider;
 
     std::unique_ptr<Persistence> m_persistence;
-
-    std::unique_ptr<DataProtocol> m_dataProtocol;
-    std::unique_ptr<StatusProtocol> m_statusProtocol;
-    std::unique_ptr<RegistrationProtocol> m_registrationProtocol;
-    std::unique_ptr<FirmwareUpdateProtocol> m_firmwareUpdateProtocol;
 
     std::shared_ptr<FirmwareInstaller> m_firmwareInstaller;
     std::shared_ptr<FirmwareVersionProvider> m_firmwareVersionProvider;

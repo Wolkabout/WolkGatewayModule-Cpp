@@ -47,24 +47,24 @@ WolkBuilder& WolkBuilder::host(const std::string& host)
 }
 
 WolkBuilder& WolkBuilder::actuationHandler(
-  const std::function<void(const std::string&, const std::string&, const std::string&)>& actuationHandler)
+  std::function<void(const std::string&, const std::string&, const std::string&)> actuationHandler)
 {
-    m_actuationHandlerLambda = actuationHandler;
+    m_actuationHandlerLambda = std::move(actuationHandler);
     m_actuationHandler.reset();
     return *this;
 }
 
 WolkBuilder& WolkBuilder::actuationHandler(std::shared_ptr<ActuationHandlerPerDevice> actuationHandler)
 {
-    m_actuationHandler = actuationHandler;
+    m_actuationHandler = std::move(actuationHandler);
     m_actuationHandlerLambda = nullptr;
     return *this;
 }
 
 WolkBuilder& WolkBuilder::actuatorStatusProvider(
-  const std::function<ActuatorStatus(const std::string&, const std::string&)>& actuatorStatusProvider)
+  std::function<ActuatorStatus(const std::string&, const std::string&)> actuatorStatusProvider)
 {
-    m_actuatorStatusProviderLambda = actuatorStatusProvider;
+    m_actuatorStatusProviderLambda = std::move(actuatorStatusProvider);
     m_actuatorStatusProvider.reset();
     return *this;
 }
@@ -72,53 +72,52 @@ WolkBuilder& WolkBuilder::actuatorStatusProvider(
 WolkBuilder& WolkBuilder::actuatorStatusProvider(
   std::shared_ptr<ActuatorStatusProviderPerDevice> actuatorStatusProvider)
 {
-    m_actuatorStatusProvider = actuatorStatusProvider;
+    m_actuatorStatusProvider = std::move(actuatorStatusProvider);
     m_actuatorStatusProviderLambda = nullptr;
     return *this;
 }
 
 WolkBuilder& WolkBuilder::configurationHandler(
-  const std::function<void(const std::string&, const std::vector<ConfigurationItem>& configuration)>&
-    configurationHandler)
+  std::function<void(const std::string&, const std::vector<ConfigurationItem>& configuration)> configurationHandler)
 {
-    m_configurationHandlerLambda = configurationHandler;
+    m_configurationHandlerLambda = std::move(configurationHandler);
     m_configurationHandler.reset();
     return *this;
 }
 
 WolkBuilder& WolkBuilder::configurationHandler(std::shared_ptr<ConfigurationHandlerPerDevice> configurationHandler)
 {
-    m_configurationHandler = configurationHandler;
+    m_configurationHandler = std::move(configurationHandler);
     m_configurationHandlerLambda = nullptr;
     return *this;
 }
 
 WolkBuilder& WolkBuilder::configurationProvider(
-  const std::function<std::vector<ConfigurationItem>(const std::string&)>& configurationProvider)
+  std::function<std::vector<ConfigurationItem>(const std::string&)> configurationProvider)
 {
-    m_configurationProviderLambda = configurationProvider;
+    m_configurationProviderLambda = std::move(configurationProvider);
     m_configurationProvider.reset();
     return *this;
 }
 
 WolkBuilder& WolkBuilder::configurationProvider(std::shared_ptr<ConfigurationProviderPerDevice> configurationProvider)
 {
-    m_configurationProvider = configurationProvider;
+    m_configurationProvider = std::move(configurationProvider);
     m_configurationProviderLambda = nullptr;
     return *this;
 }
 
 WolkBuilder& WolkBuilder::deviceStatusProvider(
-  const std::function<DeviceStatus(const std::string& deviceKey)>& deviceStatusProvider)
+  std::function<DeviceStatus::Status(const std::string& deviceKey)> deviceStatusProvider)
 {
-    m_deviceStatusProviderLambda = deviceStatusProvider;
+    m_deviceStatusProviderLambda = std::move(deviceStatusProvider);
     m_deviceStatusProvider.reset();
     return *this;
 }
 
 WolkBuilder& WolkBuilder::deviceStatusProvider(std::shared_ptr<DeviceStatusProvider> deviceStatusProvider)
 {
-    m_deviceStatusProvider = deviceStatusProvider;
+    m_deviceStatusProvider = std::move(deviceStatusProvider);
     m_deviceStatusProviderLambda = nullptr;
     return *this;
 }
@@ -129,17 +128,11 @@ WolkBuilder& WolkBuilder::withPersistence(std::unique_ptr<Persistence> persisten
     return *this;
 }
 
-WolkBuilder& WolkBuilder::withDataProtocol(std::unique_ptr<DataProtocol> protocol)
-{
-    m_dataProtocol.reset(protocol.release());
-    return *this;
-}
-
 WolkBuilder& WolkBuilder::withFirmwareUpdate(std::shared_ptr<FirmwareInstaller> installer,
                                              std::shared_ptr<FirmwareVersionProvider> provider)
 {
-    m_firmwareInstaller = installer;
-    m_firmwareVersionProvider = provider;
+    m_firmwareInstaller = std::move(installer);
+    m_firmwareVersionProvider = std::move(provider);
     return *this;
 }
 
@@ -178,10 +171,10 @@ std::unique_ptr<Wolk> WolkBuilder::build()
 
     auto wolk = std::unique_ptr<Wolk>(new Wolk());
 
-    wolk->m_dataProtocol.reset(m_dataProtocol.release());
-    wolk->m_statusProtocol.reset(m_statusProtocol.release());
-    wolk->m_registrationProtocol.reset(m_registrationProtocol.release());
-    wolk->m_firmwareUpdateProtocol.reset(m_firmwareUpdateProtocol.release());
+    wolk->m_dataProtocol.reset(new JsonProtocol());
+    wolk->m_statusProtocol.reset(new JsonStatusProtocol());
+    wolk->m_registrationProtocol.reset(new JsonRegistrationProtocol());
+    wolk->m_firmwareUpdateProtocol.reset(new JsonDFUProtocol());
 
     wolk->m_persistence.reset(m_persistence.release());
 
@@ -269,10 +262,6 @@ WolkBuilder::WolkBuilder()
 , m_deviceStatusProviderLambda{nullptr}
 , m_deviceStatusProvider{nullptr}
 , m_persistence{new InMemoryPersistence()}
-, m_dataProtocol{new JsonProtocol()}
-, m_statusProtocol{new JsonStatusProtocol()}
-, m_registrationProtocol{new JsonRegistrationProtocol()}
-, m_firmwareUpdateProtocol{new JsonDFUProtocol()}
 , m_firmwareInstaller{nullptr}
 , m_firmwareVersionProvider{nullptr}
 {

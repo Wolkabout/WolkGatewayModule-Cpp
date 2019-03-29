@@ -21,15 +21,12 @@
 #include "ActuatorStatusProviderPerDevice.h"
 #include "ConfigurationHandlerPerDevice.h"
 #include "ConfigurationProviderPerDevice.h"
-#include "InboundGatewayMessageHandler.h"
 #include "WolkBuilder.h"
 #include "model/ActuatorStatus.h"
 #include "model/Device.h"
 #include "model/DeviceStatus.h"
 #include "model/SubdeviceRegistrationResponse.h"
-#include "protocol/DataProtocol.h"
-#include "protocol/RegistrationProtocol.h"
-#include "protocol/StatusProtocol.h"
+
 #include "utilities/CommandBuffer.h"
 
 #include <functional>
@@ -44,9 +41,11 @@ class ConnectivityService;
 class DataService;
 class DeviceStatusService;
 class DeviceRegistrationService;
-class InboundMessageHandler;
-class FirmwareUpdateService;
 class FileDownloadService;
+class FirmwareUpdateService;
+class InboundGatewayMessageHandler;
+class InboundMessageHandler;
+class JsonDFUProtocol;
 
 class Wolk
 {
@@ -166,7 +165,7 @@ public:
      * @brief addDeviceStatus
      * @param status
      */
-    void addDeviceStatus(const std::string& deviceKey, DeviceStatus status);
+    void addDeviceStatus(const std::string& deviceKey, DeviceStatus::Status status);
 
     /**
      * @brief Invokes ConfigurationProvider to obtain device configuration, and the publishes it.<br>
@@ -245,7 +244,7 @@ private:
     std::unique_ptr<DataProtocol> m_dataProtocol;
     std::unique_ptr<StatusProtocol> m_statusProtocol;
     std::unique_ptr<RegistrationProtocol> m_registrationProtocol;
-    std::unique_ptr<FirmwareUpdateProtocol> m_firmwareUpdateProtocol;
+    std::unique_ptr<JsonDFUProtocol> m_firmwareUpdateProtocol;
 
     std::unique_ptr<Persistence> m_persistence;
 
@@ -259,7 +258,7 @@ private:
     std::function<ActuatorStatus(const std::string&, const std::string&)> m_actuatorStatusProviderLambda;
     std::shared_ptr<ActuatorStatusProviderPerDevice> m_actuatorStatusProvider;
 
-    std::function<DeviceStatus(const std::string&)> m_deviceStatusProviderLambda;
+    std::function<DeviceStatus::Status(const std::string&)> m_deviceStatusProviderLambda;
     std::shared_ptr<DeviceStatusProvider> m_deviceStatusProvider;
 
     std::function<void(const std::string&, const std::vector<ConfigurationItem>& configuration)>

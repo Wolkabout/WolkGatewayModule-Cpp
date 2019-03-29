@@ -32,7 +32,7 @@ public:
      * @param deviceKey Device key
      * @return DeviceStatus of specified device
      */
-    virtual DeviceStatus getDeviceStatus(const std::string& deviceKey) = 0;
+    virtual DeviceStatus::Status getDeviceStatus(const std::string& deviceKey) = 0;
 
     virtual ~DeviceStatusProvider() = default;
 };

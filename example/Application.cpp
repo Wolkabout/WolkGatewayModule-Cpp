@@ -209,17 +209,17 @@ int main(int argc, char** argv)
 
             return wolkabout::ActuatorStatus("", wolkabout::ActuatorStatus::State::READY);
         })
-        .deviceStatusProvider([&](const std::string& deviceKey) -> wolkabout::DeviceStatus {
+        .deviceStatusProvider([&](const std::string& deviceKey) -> wolkabout::DeviceStatus::Status {
             auto it =
               std::find_if(appConfiguration.getDevices().begin(), appConfiguration.getDevices().end(),
                            [&](const wolkabout::Device& device) -> bool { return (device.getKey() == deviceKey); });
 
             if (it != appConfiguration.getDevices().end())
             {
-                return wolkabout::DeviceStatus::CONNECTED;
+                return wolkabout::DeviceStatus::Status::CONNECTED;
             }
 
-            return wolkabout::DeviceStatus::OFFLINE;
+            return wolkabout::DeviceStatus::Status::OFFLINE;
         })
         .configurationHandler(
           [&](const std::string& deviceKey, const std::vector<wolkabout::ConfigurationItem>& configuration) {
