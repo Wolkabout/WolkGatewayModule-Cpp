@@ -259,7 +259,7 @@ TEST_F(DataService, Given_When_ConfigurationSetMessageIsReceived_Then_Configurat
 
     EXPECT_CALL(*dataProtocol, isConfigurationSetMessage(testing::_)).Times(1).WillOnce(testing::Return(true));
 
-    EXPECT_CALL(*dataProtocol, makeConfigurationSetCommandProxy(testing::_, testing::_))
+    EXPECT_CALL(*dataProtocol, makeConfigurationSetCommandProxy(testing::_))
       .Times(1)
       .WillOnce(testing::Return(new wolkabout::ConfigurationSetCommand({})));
 
@@ -287,7 +287,7 @@ TEST_F(DataService, Given_When_InvalidConfigurationSetMessageIsReceived_Then_Mes
 
     EXPECT_CALL(*dataProtocol, isConfigurationSetMessage(testing::_)).Times(1).WillOnce(testing::Return(true));
 
-    EXPECT_CALL(*dataProtocol, makeConfigurationSetCommandProxy(testing::_, testing::_))
+    EXPECT_CALL(*dataProtocol, makeConfigurationSetCommandProxy(testing::_))
       .Times(1)
       .WillOnce(testing::Return(nullptr));
 
@@ -328,16 +328,14 @@ TEST_F(
     const std::string key = "DEVICE_KEY";
     const std::string ref = "REF";
     const std::vector<std::string> values = {"VALUE1", "VALUE2"};
-    const std::string delimiter = "#";
     const auto rtc = 2463477347;
 
     EXPECT_CALL(*persistence, putSensorReading(key + "+" + ref, testing::_)).Times(1).WillOnce(testing::Return(true));
 
     // When
-    dataService->addSensorReading(key, ref, values, delimiter, rtc);
+    dataService->addSensorReading(key, ref, values, rtc);
 
     // Then
-    ASSERT_EQ(dataService->getSensorDelimiter(key + "+" + ref), delimiter);
 }
 
 TEST_F(DataService, Given_Alarm_When_AddAlarmIsCalled_Then_AlarmIsAddedToPeristance)
@@ -378,7 +376,7 @@ TEST_F(DataService, Given_Configuration_When_AddConfigurationIsCalled_Then_Confi
     EXPECT_CALL(*persistence, putConfiguration(key, testing::_)).Times(1).WillOnce(testing::Return(true));
 
     // When
-    dataService->addConfiguration(key, values, {});
+    dataService->addConfiguration(key, values);
 }
 
 TEST_F(
@@ -413,8 +411,7 @@ TEST_F(
     EXPECT_CALL(
       *dataProtocol,
       makeMessageProxy(testing::_,
-                       testing::Matcher<const std::vector<std::shared_ptr<wolkabout::SensorReading>>&>(testing::_),
-                       testing::_))
+                       testing::Matcher<const std::vector<std::shared_ptr<wolkabout::SensorReading>>&>(testing::_)))
       .Times(3)
       .WillRepeatedly(testing::InvokeWithoutArgs([&] { return new wolkabout::Message("", ""); }));
 
@@ -494,8 +491,7 @@ TEST_F(
     EXPECT_CALL(
       *dataProtocol,
       makeMessageProxy(testing::_,
-                       testing::Matcher<const std::vector<std::shared_ptr<wolkabout::SensorReading>>&>(testing::_),
-                       testing::_))
+                       testing::Matcher<const std::vector<std::shared_ptr<wolkabout::SensorReading>>&>(testing::_)))
       .Times(2)
       .WillRepeatedly(testing::InvokeWithoutArgs([&] { return new wolkabout::Message("", ""); }));
 
@@ -846,8 +842,7 @@ TEST_F(
 
     EXPECT_CALL(
       *dataProtocol,
-      makeMessageProxy(testing::_, testing::Matcher<const std::vector<wolkabout::ConfigurationItem>&>(testing::_),
-                       testing::_))
+      makeMessageProxy(testing::_, testing::Matcher<const std::vector<wolkabout::ConfigurationItem>&>(testing::_)))
       .Times(3)
       .WillRepeatedly(testing::InvokeWithoutArgs([&] { return new wolkabout::Message("", ""); }));
 
@@ -911,8 +906,7 @@ TEST_F(
 
     EXPECT_CALL(
       *dataProtocol,
-      makeMessageProxy(testing::_, testing::Matcher<const std::vector<wolkabout::ConfigurationItem>&>(testing::_),
-                       testing::_))
+      makeMessageProxy(testing::_, testing::Matcher<const std::vector<wolkabout::ConfigurationItem>&>(testing::_)))
       .Times(1)
       .WillRepeatedly(testing::InvokeWithoutArgs([&] { return new wolkabout::Message("", ""); }));
 

@@ -48,27 +48,25 @@ public:
     MOCK_CONST_METHOD1(makeActuatorSetCommandProxy, wolkabout::ActuatorSetCommand*(const wolkabout::Message& message));
 
     std::unique_ptr<wolkabout::ConfigurationSetCommand> makeConfigurationSetCommand(
-      const wolkabout::Message& message, const std::map<std::string, std::string>& delimiters) const override
+      const wolkabout::Message& message) const override
     {
-        return std::unique_ptr<wolkabout::ConfigurationSetCommand>(
-          makeConfigurationSetCommandProxy(message, delimiters));
+        return std::unique_ptr<wolkabout::ConfigurationSetCommand>(makeConfigurationSetCommandProxy(message));
     }
 
-    MOCK_CONST_METHOD2(makeConfigurationSetCommandProxy,
-                       wolkabout::ConfigurationSetCommand*(const wolkabout::Message& message,
-                                                           const std::map<std::string, std::string>& delimiters));
+    MOCK_CONST_METHOD1(makeConfigurationSetCommandProxy,
+                       wolkabout::ConfigurationSetCommand*(const wolkabout::Message& message));
 
     std::unique_ptr<wolkabout::Message> makeMessage(
-      const std::string& deviceKey, const std::vector<std::shared_ptr<wolkabout::SensorReading>>& sensorReadings,
-      const std::string& delimiter) const override
+      const std::string& deviceKey,
+      const std::vector<std::shared_ptr<wolkabout::SensorReading>>& sensorReadings) const override
     {
-        return std::unique_ptr<wolkabout::Message>(makeMessageProxy(deviceKey, sensorReadings, delimiter));
+        return std::unique_ptr<wolkabout::Message>(makeMessageProxy(deviceKey, sensorReadings));
     }
 
-    MOCK_CONST_METHOD3(makeMessageProxy,
-                       wolkabout::Message*(const std::string& deviceKey,
-                                           const std::vector<std::shared_ptr<wolkabout::SensorReading>>& sensorReadings,
-                                           const std::string& delimiter));
+    MOCK_CONST_METHOD2(
+      makeMessageProxy,
+      wolkabout::Message*(const std::string& deviceKey,
+                          const std::vector<std::shared_ptr<wolkabout::SensorReading>>& sensorReadings));
 
     std::unique_ptr<wolkabout::Message> makeMessage(
       const std::string& deviceKey, const std::vector<std::shared_ptr<wolkabout::Alarm>>& alarms) const override
@@ -92,17 +90,15 @@ public:
       wolkabout::Message*(const std::string& deviceKey,
                           const std::vector<std::shared_ptr<wolkabout::ActuatorStatus>>& actuatorStatuses));
 
-    std::unique_ptr<wolkabout::Message> makeMessage(const std::string& deviceKey,
-                                                    const std::vector<wolkabout::ConfigurationItem>& configuration,
-                                                    const std::map<std::string, std::string>& delimiters) const override
+    std::unique_ptr<wolkabout::Message> makeMessage(
+      const std::string& deviceKey, const std::vector<wolkabout::ConfigurationItem>& configuration) const override
     {
-        return std::unique_ptr<wolkabout::Message>(makeMessageProxy(deviceKey, configuration, delimiters));
+        return std::unique_ptr<wolkabout::Message>(makeMessageProxy(deviceKey, configuration));
     }
 
-    MOCK_CONST_METHOD3(makeMessageProxy,
+    MOCK_CONST_METHOD2(makeMessageProxy,
                        wolkabout::Message*(const std::string& deviceKey,
-                                           const std::vector<wolkabout::ConfigurationItem>& configuration,
-                                           const std::map<std::string, std::string>& delimiters));
+                                           const std::vector<wolkabout::ConfigurationItem>& configuration));
 
 private:
     const std::string m_name{""};
