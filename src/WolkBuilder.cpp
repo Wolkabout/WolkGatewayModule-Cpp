@@ -172,8 +172,8 @@ std::unique_ptr<Wolk> WolkBuilder::build()
     auto wolk = std::unique_ptr<Wolk>(new Wolk());
 
     wolk->m_dataProtocol.reset(new JsonProtocol());
-    wolk->m_statusProtocol.reset(new JsonStatusProtocol());
-    wolk->m_registrationProtocol.reset(new JsonRegistrationProtocol());
+    wolk->m_statusProtocol.reset(new JsonStatusProtocol(false));
+    wolk->m_registrationProtocol.reset(new JsonRegistrationProtocol(false));
     wolk->m_firmwareUpdateProtocol.reset(new JsonDFUProtocol());
 
     wolk->m_persistence.reset(m_persistence.release());

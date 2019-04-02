@@ -33,11 +33,6 @@ DeviceStatusService::DeviceStatusService(StatusProtocol& protocol, ConnectivityS
 void DeviceStatusService::messageReceived(std::shared_ptr<Message> message)
 {
     const std::string deviceKey = m_protocol.extractDeviceKeyFromChannel(message->getChannel());
-    if (deviceKey.empty())
-    {
-        LOG(WARN) << "Unable to extract device key from channel: " << message->getChannel();
-        return;
-    }
 
     if (m_protocol.isStatusRequestMessage(*message))
     {

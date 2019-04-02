@@ -13,8 +13,6 @@ class MockDataProtocol : public wolkabout::DataProtocol
 public:
     MOCK_CONST_METHOD1(extractReferenceFromChannel, std::string(const std::string&));
 
-    const std::string& getName() const override { return m_name; }
-
     std::vector<std::string> getInboundChannels() const override { return m_channels; };
     std::vector<std::string> getInboundChannelsForDevice(const std::string& deviceKey) const override
     {

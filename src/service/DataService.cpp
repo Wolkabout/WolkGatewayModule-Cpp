@@ -51,11 +51,6 @@ void DataService::messageReceived(std::shared_ptr<Message> message)
     assert(message);
 
     const std::string deviceKey = m_protocol.extractDeviceKeyFromChannel(message->getChannel());
-    if (deviceKey.empty())
-    {
-        LOG(WARN) << "Unable to extract device key from channel: " << message->getChannel();
-        return;
-    }
 
     if (m_protocol.isActuatorGetMessage(*message))
     {
@@ -70,8 +65,17 @@ void DataService::messageReceived(std::shared_ptr<Message> message)
         {
             m_actuatorGetHandler(deviceKey, command->getReference());
         }
+
+        return;
     }
-    else if (m_protocol.isActuatorSetMessage(*message))
+
+    if (deviceKey.empty())
+    {
+        LOG(WARN) << "Unable to extract device key from channel: " << message->getChannel();
+        return;
+    }
+
+    if (m_protocol.isActuatorSetMessage(*message))
     {
         auto command = m_protocol.makeActuatorSetCommand(*message);
         if (!command)
