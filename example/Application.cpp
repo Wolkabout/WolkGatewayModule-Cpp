@@ -18,6 +18,7 @@
 #include "Wolk.h"
 #include "model/DeviceTemplate.h"
 #include "utilities/ConsoleLogger.h"
+#include "utilities/Timer.h"
 
 #include "model/SensorTemplate.h"
 
@@ -155,15 +156,63 @@ int main(int argc, char** argv)
             auto it = m_firmwareStatuses.find(deviceKey);
             if (it != m_firmwareStatuses.end() && std::get<1>(it->second))
             {
-                ++(std::get<0>(it->second));
-                std::this_thread::sleep_for(std::chrono::seconds(10));
-                onSuccess(deviceKey);
+                auto statusIt = m_perDeviceInstallationState.find(deviceKey);
+                if (statusIt == m_perDeviceInstallationState.end())
+                {
+                    m_perDeviceInstallationState[deviceKey] =
+                      std::unique_ptr<FirmwareInstallionStruct>(new FirmwareInstallionStruct());
+                }
+
+                if (m_perDeviceInstallationState[deviceKey]->timer1.running() ||
+                    m_perDeviceInstallationState[deviceKey]->timer2.running())
+                {
+                    return;
+                }
+
+                // abort is possible during first 5 seconds
+                m_perDeviceInstallationState[deviceKey]->abortPossible = true;
+                m_perDeviceInstallationState[deviceKey]->timer1.start(std::chrono::seconds(5), [=] {
+                    m_perDeviceInstallationState[deviceKey]->abortPossible = false;
+                    m_perDeviceInstallationState[deviceKey]->timer2.start(std::chrono::seconds(5), [=] {
+                        auto firmwareVersionIt = m_firmwareStatuses.find(deviceKey);
+                        ++(std::get<0>(firmwareVersionIt->second));
+                        onSuccess(deviceKey);
+                    });
+                });
             }
             else
             {
                 onFail(deviceKey);
             }
         }
+
+        bool abort(const std::string& deviceKey) override
+        {
+            auto statusIt = m_perDeviceInstallationState.find(deviceKey);
+            if (statusIt == m_perDeviceInstallationState.end())
+            {
+                return false;
+            }
+
+            if (!m_perDeviceInstallationState[deviceKey]->abortPossible)
+            {
+                return false;
+            }
+
+            m_perDeviceInstallationState[deviceKey]->timer1.stop();
+            m_perDeviceInstallationState[deviceKey]->timer2.stop();
+            return true;
+        }
+
+    private:
+        struct FirmwareInstallionStruct
+        {
+            std::atomic_bool abortPossible;
+            wolkabout::Timer timer1;
+            wolkabout::Timer timer2;
+        };
+
+        std::map<std::string, std::unique_ptr<FirmwareInstallionStruct>> m_perDeviceInstallationState;
     };
 
     class FirmwareVersionProviderImpl : public wolkabout::FirmwareVersionProvider
