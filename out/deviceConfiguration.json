@@ -115,7 +115,7 @@
           }
         ],
         "firmwareUpdateType": "DFU",
-        "firmwareUpdateParameters": {},
+        "firmwareUpdateParameters": {"supportsFirmwareUpdate": true},
         "connectivityParameters": {},
         "typeParameters": {}
       }
