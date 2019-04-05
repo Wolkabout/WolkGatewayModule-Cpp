@@ -163,8 +163,16 @@ void FirmwareUpdateService::installFailed(const std::string& deviceKey)
 
 void FirmwareUpdateService::abort(const std::string& deviceKey)
 {
-    // TODO !!!
-    sendStatus(FirmwareUpdateStatus{{deviceKey}, FirmwareUpdateStatus::Status::ABORTED});
+    LOG(INFO) << "Abort firmware installation for device: " << deviceKey;
+    if (m_firmwareInstaller->abort(deviceKey))
+    {
+        LOG(INFO) << "Firmware installation aborted for device: " << deviceKey;
+        sendStatus(FirmwareUpdateStatus{{deviceKey}, FirmwareUpdateStatus::Status::ABORTED});
+    }
+    else
+    {
+        LOG(INFO) << "Firmware installation cannot be aborted for device: " << deviceKey;
+    }
 }
 
 void FirmwareUpdateService::sendStatus(const FirmwareUpdateStatus& response)

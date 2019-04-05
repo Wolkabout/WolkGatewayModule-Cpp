@@ -27,7 +27,10 @@ public:
     virtual ~FirmwareInstaller() = default;
 
     /**
-     * @brief install Install the firmware from provided file
+     * @brief Install the firmware from provided file
+     *
+     * This call needs to return as quickly as possible
+     *
      * @param deviceKey Key of the device
      * @param firmwareFile Firmware file to install
      * @param onSuccess Function to call if install is successful
@@ -36,6 +39,16 @@ public:
     virtual void install(const std::string& deviceKey, const std::string& firmwareFile,
                          std::function<void(const std::string& deviceKey)> onSuccess,
                          std::function<void(const std::string& deviceKey)> onFail) = 0;
+
+    /**
+     * @brief Abort firmware installation if possible
+     *
+     * This call needs to return as quickly as possible
+     *
+     * @param deviceKey Key of the device
+     * @return true if success or false if abort cannot be performed
+     */
+    virtual bool abort(const std::string& deviceKey) = 0;
 };
 }    // namespace wolkabout
 
