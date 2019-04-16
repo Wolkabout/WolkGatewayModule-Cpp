@@ -301,7 +301,7 @@ int main(int argc, char** argv)
     std::random_device rd;
     std::mt19937 mt(rd());
 
-    const unsigned interval = appConfiguration.getInterval();
+    auto sleepPeriod = std::chrono::milliseconds(appConfiguration.getInterval());
 
     while (true)
     {
@@ -357,12 +357,12 @@ int main(int argc, char** argv)
                 }
 
                 wolk->addSensorReading(device.getKey(), sensor.getReference(), values);
+
+                wolk->publish();
+
+                std::this_thread::sleep_for(sleepPeriod);
             }
         }
-
-        wolk->publish();
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
     }
     return 0;
 }
