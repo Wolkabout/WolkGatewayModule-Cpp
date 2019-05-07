@@ -275,6 +275,13 @@ public:
 
         onSuccess(deviceKey);
     }
+
+    bool abort(const std::string& deviceKey) override
+    {
+        // Mock abort
+        std::cout << "Aborting firmware installation for device " << deviceKey << std::endl;
+        return false;
+    }
 };
 
 class CustomFirmwareVersionProvider : public wolkabout::FirmwareVersionProvider

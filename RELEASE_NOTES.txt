@@ -1,0 +1,9 @@
+*WolkGateway RELEASE NOTES**
+--------------------------
+
+*WolkAbout Technology s.r.o.*
+
+WolkAbout C++11 Connector library for connecting devices to WolkAbout Gateway
+
+**Version 4.0.0**
+- [IMPROVEMENT] Updated JSON communication protocol to be in-line with WolkGateway version 4.0.0
